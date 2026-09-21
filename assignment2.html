@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+        <meta charset="UTF-8">
+
+        <meta name="viewport"
+              content="width=device-width, user-scalable=no,
+          initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+        <title>Spatial Input Prototype</title>
+
+        <!-- load Tone.js -->
+        <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+
+        <!-- load spatial controller -->
+        <script src="spatialControllerFunctions.js" defer></script>
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+<section>
+
+    <h2>Spatial Input Demos</h2>
+
+    <div id="xyPad">
+
+        <div class="music-line"></div>
+        <div class="music-line"></div>
+        <div class="music-line"></div>
+        <div class="music-line"></div>
+        <div class="music-line"></div>
+
+        <div id="xyPosMarker">🐱</div>
+
+    </div>
+
+    <p>X: <span id="xPosOutput">0</span></p>
+    <p>Y: <span id="yPosOutput">0</span></p>
+
+</section>
+</body>
+</html>
