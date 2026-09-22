@@ -222,6 +222,19 @@ footer {
     user-select: none;
 }
 
+/* Scale up when animal plays */
+.animal.playing {
+    transform: translate(-50%, -50%) scale(1.4);
+}
+
+.animal.placed {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    transition: transform 0.2s;
+}
+
+
 
 /* Music area */
 #xyPad {

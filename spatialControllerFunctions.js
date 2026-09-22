@@ -147,12 +147,11 @@ playButton.addEventListener("click", async () => {
 
     await Tone.start();
 
-    // Only get animals inside the music area
+    // Get animals in music area
     const placedAnimals =
         Array.from(
             xyPad.querySelectorAll(".animal.placed")
         );
-
 
     // Sort animals from left to right
     placedAnimals.sort((a, b) => {
@@ -163,19 +162,31 @@ playButton.addEventListener("click", async () => {
         return aPosition - bPosition;
     });
 
-
     // Play each animal
-    const now = Tone.now();
-
     placedAnimals.forEach((animal, index) => {
 
         let pitch = animal.dataset.pitch;
 
-        synth.triggerAttackRelease(
-            pitch,
-            "8n",
-            now + index * 0.5
-        );
+        let delay = index * 500;
+
+        setTimeout(() => {
+
+            // Play note
+            synth.triggerAttackRelease(pitch, "8n");
+
+            // Make animal bigger
+            animal.style.transform =
+                "translate(-50%, -50%) scale(1.8)";
+
+            // Return to normal size
+            setTimeout(() => {
+
+                animal.style.transform =
+                    "translate(-50%, -50%) scale(1)";
+
+            }, 300);
+
+        }, delay);
     });
 });
 
@@ -227,4 +238,4 @@ redoButton.addEventListener("click", () => {
 //const scrollPercent = page.scrollTop / (page.scrollHeight - page.clientHeight);
 
 // finally we want to return this as a percentage number, so we mult by 100 then round it to whole numbers
-//return parseInt(scrollPercent * 100); }
+//return parseInt(scrollPercent * 100);
