@@ -239,37 +239,40 @@ footer {
 /* Music area */
 #xyPad {
     position: relative;
-
-    width: 100vw;
-    height: 70vh;
-
+    width: 100%;
+    height: 500px;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    padding-top: 30px;
-    padding-bottom: 80px;
-
-    box-sizing: border-box;
-
     user-select: none;
 }
 
 
-/* Music lines */
-.music-line {
-    width: 100%;
-    height: 2px;
-    background-color: black;
+/* Each sound area */
+.sound-zone {
+    width: 20%;
+    height: 100%;
+    margin-bottom: 50px;
 }
 
+.red-zone {
+    background-color: #ffb3b3;
+}
+.yellow-zone {
+    background-color: #fff0a6;
+}
+.green-zone {
+    background-color: #b8e6b8;
+}
+.blue-zone {
+    background-color: #b8d8f5;
+}
+.purple-zone {
+    background-color: #d8b8e8;
+}
 
 /* Animal after being placed in music area */
 .animal.placed {
     position: absolute;
-
     transform: translate(-50%, -50%);
-
     cursor: grab;
 }
 
@@ -279,8 +282,7 @@ footer {
     display: flex;
     justify-content: center;
     gap: 20px;
-
-    margin-top: 30px;
+    margin-top: 70px;
 }
 
 #controls button {

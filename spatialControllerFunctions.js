@@ -63,6 +63,22 @@ function moveAnimal(e) {
     let yPos = e.clientY - rect.top;
 
     let xPercent = (xPos / rect.width) * 100;
+    // Change note depending on colour area
+    if (xPercent < 20) {
+        currentAnimal.dataset.pitch = "C4";
+    }
+    else if (xPercent < 40) {
+        currentAnimal.dataset.pitch = "D4";
+    }
+    else if (xPercent < 60) {
+        currentAnimal.dataset.pitch = "E4";
+    }
+    else if (xPercent < 80) {
+        currentAnimal.dataset.pitch = "G4";
+    }
+    else {
+        currentAnimal.dataset.pitch = "A4";
+    }
     let yPercent = (yPos / rect.height) * 100;
 
 
@@ -84,8 +100,8 @@ function stopDragging() {
         return;
     }
 
-    // Snap animal to nearest note
-    snapToNote(currentAnimal);
+    // // Snap animal to nearest note
+    // snapToNote(currentAnimal);
 
     currentAnimal = null;
 
