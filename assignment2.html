@@ -24,9 +24,18 @@
 </head>
 <body>
 <section>
+    <h5>Spatial Input Demos</h5>
 
-    <h2>Spatial Input Demos</h2>
+    <!-- Animals start here -->
+    <div id="animalArea">
+        <div class="animal" id="cat">🐱</div>
+        <div class="animal" id="frog">🐸</div>
+        <div class="animal" id="chick">🐥</div>
+        <div class="animal" id="dog">🐶</div>
+        <div class="animal" id="rabbit">🐰</div>
+    </div>
 
+    <!-- Music area -->
     <div id="xyPad">
 
         <div class="music-line"></div>
@@ -35,13 +44,13 @@
         <div class="music-line"></div>
         <div class="music-line"></div>
 
-        <div id="xyPosMarker">🐱</div>
-
     </div>
 
-    <p>X: <span id="xPosOutput">0</span></p>
-    <p>Y: <span id="yPosOutput">0</span></p>
-
+    <!-- Controls -->
+    <div id="controls">
+        <button id="playButton">Play</button>
+        <button id="redoButton">Redo</button>
+    </div>
 </section>
 </body>
 </html>
