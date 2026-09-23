@@ -1,14 +1,7 @@
 /////
-/* this is slightly more simple implementation of the previous xy controller */
-/* !!important!! this only works because the xyPad has been given a CSS position property, in this case relative */
-/* e.layerX or e.layerY only work when they have one (doesn't need to be relative) */
-/* also important is that we've set the marker to pointer-events: none in the CSS so that we can listen for events on the pad*/
-/////
-
-/////
 /* Spatial input prototype */
-/* Animals can be dragged onto different notes */
-/* Y position changes pitch */
+/* Colour areas appear in random positions */
+/* Each area has a random note */
 /* X position changes play order */
 /////
 
@@ -25,7 +18,87 @@ const redoButton = document.getElementById("redoButton");
 let currentAnimal = null;
 
 
-// Start dragging an animal
+// Notes for random areas
+const notes = [
+    "C4",
+    "D4",
+    "E4",
+    "F4",
+    "G4",
+    "A4",
+    "B4",
+    "C5",
+    "D5",
+    "E5"
+];
+
+
+// Colours for sound areas
+const colours = [
+    "#ffb3b3",
+    "#fff0a6",
+    "#b8e6b8",
+    "#b8d8f5",
+    "#d8b8e8"
+];
+
+
+// Create random sound areas
+function createSoundZones() {
+
+    // Remove old areas
+    const oldZones =
+        xyPad.querySelectorAll(".sound-zone");
+
+    oldZones.forEach((zone) => {
+        zone.remove();
+    });
+
+
+    // Create new areas
+    colours.forEach((colour) => {
+
+        const zone =
+            document.createElement("div");
+
+        zone.classList.add("sound-zone");
+
+
+        // Random position
+        let x = Math.random() * 75;
+        let y = Math.random() * 70;
+
+        zone.style.left = `${x}%`;
+        zone.style.top = `${y}%`;
+
+
+        // Add colour
+        zone.style.backgroundColor = colour;
+
+
+        // Choose random note
+        let randomNote =
+            notes[
+                Math.floor(
+                    Math.random() * notes.length
+                )
+                ];
+
+        // Save note
+        zone.dataset.pitch = randomNote;
+
+
+        // Add area to music space
+        xyPad.appendChild(zone);
+    });
+}
+
+
+// Create areas when page starts
+createSoundZones();
+
+
+// Start dragging animal
 animals.forEach((animal) => {
 
     animal.addEventListener("mousedown", async (e) => {
@@ -33,6 +106,7 @@ animals.forEach((animal) => {
         await Tone.start();
 
         currentAnimal = animal;
+
 
         // Move animal into music area
         if (!animal.classList.contains("placed")) {
@@ -42,54 +116,68 @@ animals.forEach((animal) => {
             animal.classList.add("placed");
         }
 
+
         moveAnimal(e);
 
-        window.addEventListener("mousemove", moveAnimal);
-        window.addEventListener("mouseup", stopDragging);
+        window.addEventListener(
+            "mousemove",
+            moveAnimal
+        );
+
+        window.addEventListener(
+            "mouseup",
+            stopDragging
+        );
     });
 });
 
 
-// Move animal with mouse
+// Move animal
 function moveAnimal(e) {
 
     if (!currentAnimal) {
         return;
     }
 
-    const rect = xyPad.getBoundingClientRect();
 
-    let xPos = e.clientX - rect.left;
-    let yPos = e.clientY - rect.top;
+    const rect =
+        xyPad.getBoundingClientRect();
 
-    let xPercent = (xPos / rect.width) * 100;
-    // Change note depending on colour area
-    if (xPercent < 20) {
-        currentAnimal.dataset.pitch = "C4";
-    }
-    else if (xPercent < 40) {
-        currentAnimal.dataset.pitch = "D4";
-    }
-    else if (xPercent < 60) {
-        currentAnimal.dataset.pitch = "E4";
-    }
-    else if (xPercent < 80) {
-        currentAnimal.dataset.pitch = "G4";
-    }
-    else {
-        currentAnimal.dataset.pitch = "A4";
-    }
-    let yPercent = (yPos / rect.height) * 100;
+
+    let xPos =
+        e.clientX - rect.left;
+
+    let yPos =
+        e.clientY - rect.top;
+
+
+    let xPercent =
+        (xPos / rect.width) * 100;
+
+    let yPercent =
+        (yPos / rect.height) * 100;
 
 
     // Keep animal inside music area
-    xPercent = Math.max(0, Math.min(100, xPercent));
-    yPercent = Math.max(0, Math.min(100, yPercent));
+    xPercent =
+        Math.max(
+            0,
+            Math.min(100, xPercent)
+        );
+
+    yPercent =
+        Math.max(
+            0,
+            Math.min(100, yPercent)
+        );
 
 
     // Move animal
-    currentAnimal.style.left = `${xPercent}%`;
-    currentAnimal.style.top = `${yPercent}%`;
+    currentAnimal.style.left =
+        `${xPercent}%`;
+
+    currentAnimal.style.top =
+        `${yPercent}%`;
 }
 
 
@@ -100,61 +188,61 @@ function stopDragging() {
         return;
     }
 
-    // // Snap animal to nearest note
-    // snapToNote(currentAnimal);
 
-    currentAnimal = null;
+    // Find centre of animal
+    const animalRect =
+        currentAnimal.getBoundingClientRect();
 
-    window.removeEventListener("mousemove", moveAnimal);
-    window.removeEventListener("mouseup", stopDragging);
-}
+    const animalX =
+        animalRect.left +
+        animalRect.width / 2;
 
-
-// Snap animal to nearest note
-function snapToNote(animal) {
-
-    let currentY = parseFloat(animal.style.top);
-
-    // Note positions
-    const notes = [
-        { position: 5, pitch: "F5" },
-        { position: 15, pitch: "E5" },
-        { position: 25, pitch: "D5" },
-        { position: 35, pitch: "C5" },
-        { position: 45, pitch: "B4" },
-        { position: 55, pitch: "A4" },
-        { position: 65, pitch: "G4" },
-        { position: 75, pitch: "F4" },
-        { position: 85, pitch: "E4" },
-        { position: 95, pitch: "D4" }
-    ];
+    const animalY =
+        animalRect.top +
+        animalRect.height / 2;
 
 
-    // Start with first note
-    let closestNote = notes[0];
+    // Find all sound areas
+    const zones =
+        document.querySelectorAll(".sound-zone");
 
 
-    // Find closest note
-    notes.forEach((note) => {
+    // Clear old note
+    delete currentAnimal.dataset.pitch;
 
-        let distance =
-            Math.abs(currentY - note.position);
 
-        let closestDistance =
-            Math.abs(currentY - closestNote.position);
+    // Check which area the animal is in
+    zones.forEach((zone) => {
 
-        if (distance < closestDistance) {
-            closestNote = note;
+        const zoneRect =
+            zone.getBoundingClientRect();
+
+
+        if (
+            animalX >= zoneRect.left &&
+            animalX <= zoneRect.right &&
+            animalY >= zoneRect.top &&
+            animalY <= zoneRect.bottom
+        ) {
+
+            // Give animal the area's note
+            currentAnimal.dataset.pitch =
+                zone.dataset.pitch;
         }
     });
 
 
-    // Move animal to note
-    animal.style.top = `${closestNote.position}%`;
+    currentAnimal = null;
 
+    window.removeEventListener(
+        "mousemove",
+        moveAnimal
+    );
 
-    // Save note
-    animal.dataset.pitch = closestNote.pitch;
+    window.removeEventListener(
+        "mouseup",
+        stopDragging
+    );
 }
 
 
@@ -163,36 +251,53 @@ playButton.addEventListener("click", async () => {
 
     await Tone.start();
 
-    // Get animals in music area
+
+    // Get animals with notes
     const placedAnimals =
         Array.from(
             xyPad.querySelectorAll(".animal.placed")
-        );
+        ).filter((animal) => {
 
-    // Sort animals from left to right
+            return animal.dataset.pitch;
+        });
+
+
+    // Sort animals left to right
     placedAnimals.sort((a, b) => {
 
-        let aPosition = parseFloat(a.style.left);
-        let bPosition = parseFloat(b.style.left);
+        let aPosition =
+            parseFloat(a.style.left);
+
+        let bPosition =
+            parseFloat(b.style.left);
 
         return aPosition - bPosition;
     });
 
+
     // Play each animal
     placedAnimals.forEach((animal, index) => {
 
-        let pitch = animal.dataset.pitch;
+        let pitch =
+            animal.dataset.pitch;
 
-        let delay = index * 500;
+        let delay =
+            index * 500;
+
 
         setTimeout(() => {
 
             // Play note
-            synth.triggerAttackRelease(pitch, "8n");
+            synth.triggerAttackRelease(
+                pitch,
+                "8n"
+            );
+
 
             // Make animal bigger
             animal.style.transform =
                 "translate(-50%, -50%) scale(1.8)";
+
 
             // Return to normal size
             setTimeout(() => {
@@ -217,13 +322,20 @@ redoButton.addEventListener("click", () => {
 
         animal.classList.remove("placed");
 
+
         // Clear position
         animal.style.left = "";
         animal.style.top = "";
+        animal.style.transform = "";
+
 
         // Clear note
         delete animal.dataset.pitch;
     });
+
+
+    // Create new random areas
+    createSoundZones();
 });
 
 
@@ -236,10 +348,8 @@ redoButton.addEventListener("click", () => {
 //const body = document.body;
 //const scrollPercentSpan = document.getElementById("scrollPercentSpan");
 
-// the event listener is added to the document itself, rather than an element, so I can get the page scroll position. it
-// can also be applied to a single element, if that element also has a scroll bar based on overflow
-// because its a scroll event we need to set it to passive - see here for more detail :
-// https://stackoverflow.com/questions/37721782/what-are-passive-event-listeners
+// the event listener is added to the document itself, rather than an element, so I can get the page scroll position.
+// because its a scroll event we need to set it to passive
 //document.addEventListener('scroll', handleScroll, { passive: true });
 
 //function handleScroll(){
@@ -247,11 +357,10 @@ redoButton.addEventListener("click", () => {
 //}
 
 //function getScrollPercent() {
-// we want to find the percentage of the page scrolled
-// scrollTop is how far it is scrolled, scrollHeight is total height : dividing one by the other gives us our percent
-// we also have to minus the height of the window (clientHeight) to account for the end of the page
-// in practice this leads to the bottom being slightly over 1.0 but it's good enough for this
-//const scrollPercent = page.scrollTop / (page.scrollHeight - page.clientHeight);
 
-// finally we want to return this as a percentage number, so we mult by 100 then round it to whole numbers
+//const scrollPercent =
+//    page.scrollTop /
+//    (page.scrollHeight - page.clientHeight);
+
 //return parseInt(scrollPercent * 100);
+//}
