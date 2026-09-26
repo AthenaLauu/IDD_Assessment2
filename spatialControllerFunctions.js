@@ -21,8 +21,38 @@ const animals = document.querySelectorAll(".animal");
 
 const playButton = document.getElementById("playButton");
 const redoButton = document.getElementById("redoButton");
+const pitchButton = document.getElementById("pitchButton");
 
+let highNotes = false;
 let currentAnimal = null;
+
+// Normal notes
+const normalNotes = [
+    "F4",
+    "E4",
+    "D4",
+    "C4",
+    "B3",
+    "A3",
+    "G3",
+    "F3",
+    "E3",
+    "D3"
+];
+
+// Higher notes
+const higherNotes = [
+    "F6",
+    "E6",
+    "D6",
+    "C6",
+    "B5",
+    "A5",
+    "G5",
+    "F5",
+    "E5",
+    "D5"
+];
 
 
 // Start dragging an animal
@@ -97,49 +127,82 @@ function stopDragging() {
 // Snap animal to nearest note
 function snapToNote(animal) {
 
-    let currentY = parseFloat(animal.style.top);
+    let currentY =
+        parseFloat(animal.style.top);
+
+    // Choose note range
+    let currentNotes;
+
+    if (highNotes === true) {
+        currentNotes = higherNotes;
+    } else {
+        currentNotes = normalNotes;
+    }
 
     // Note positions
-    const notes = [
-        { position: 5, pitch: "F5" },
-        { position: 15, pitch: "E5" },
-        { position: 25, pitch: "D5" },
-        { position: 35, pitch: "C5" },
-        { position: 45, pitch: "B4" },
-        { position: 55, pitch: "A4" },
-        { position: 65, pitch: "G4" },
-        { position: 75, pitch: "F4" },
-        { position: 85, pitch: "E4" },
-        { position: 95, pitch: "D4" }
+    const positions = [
+        5,
+        15,
+        25,
+        35,
+        45,
+        55,
+        65,
+        75,
+        85,
+        95
     ];
 
+    // Start with first position
+    let closestIndex = 0;
 
-    // Start with first note
-    let closestNote = notes[0];
-
-
-    // Find closest note
-    notes.forEach((note) => {
+    // Find closest position
+    positions.forEach((position, index) => {
 
         let distance =
-            Math.abs(currentY - note.position);
+            Math.abs(currentY - position);
 
         let closestDistance =
-            Math.abs(currentY - closestNote.position);
+            Math.abs(
+                currentY -
+                positions[closestIndex]
+            );
 
         if (distance < closestDistance) {
-            closestNote = note;
+            closestIndex = index;
         }
     });
 
-
     // Move animal to note
-    animal.style.top = `${closestNote.position}%`;
-
+    animal.style.top =
+        `${positions[closestIndex]}%`;
 
     // Save note
-    animal.dataset.pitch = closestNote.pitch;
+    animal.dataset.pitch =
+        currentNotes[closestIndex];
 }
+
+// Change between normal and higher notes
+pitchButton.addEventListener("click", () => {
+
+    // Change note range
+    highNotes = !highNotes;
+
+    // Change button text
+    if (highNotes === true) {
+        pitchButton.textContent = "Lower Notes";
+    } else {
+        pitchButton.textContent = "Higher Notes";
+    }
+
+    // Update animals already on the lines
+    const placedAnimals =
+        xyPad.querySelectorAll(".animal.placed");
+
+    placedAnimals.forEach((animal) => {
+        snapToNote(animal);
+    });
+});
 
 
 // Play animals from left to right
@@ -204,38 +267,9 @@ redoButton.addEventListener("click", () => {
         // Clear position
         animal.style.left = "";
         animal.style.top = "";
+        animal.style.transform = "";
 
         // Clear note
         delete animal.dataset.pitch;
     });
 });
-
-
-/////
-// This is a basic scroll event listener
-/////
-
-// find our document (the web page) information as the listener runs on it instead an element : see below
-//const page = document.documentElement;
-//const body = document.body;
-//const scrollPercentSpan = document.getElementById("scrollPercentSpan");
-
-// the event listener is added to the document itself, rather than an element, so I can get the page scroll position. it
-// can also be applied to a single element, if that element also has a scroll bar based on overflow
-// because its a scroll event we need to set it to passive - see here for more detail :
-// https://stackoverflow.com/questions/37721782/what-are-passive-event-listeners
-//document.addEventListener('scroll', handleScroll, { passive: true });
-
-//function handleScroll(){
-//    scrollPercentSpan.textContent = getScrollPercent();
-//}
-
-//function getScrollPercent() {
-// we want to find the percentage of the page scrolled
-// scrollTop is how far it is scrolled, scrollHeight is total height : dividing one by the other gives us our percent
-// we also have to minus the height of the window (clientHeight) to account for the end of the page
-// in practice this leads to the bottom being slightly over 1.0 but it's good enough for this
-//const scrollPercent = page.scrollTop / (page.scrollHeight - page.clientHeight);
-
-// finally we want to return this as a percentage number, so we mult by 100 then round it to whole numbers
-//return parseInt(scrollPercent * 100);
