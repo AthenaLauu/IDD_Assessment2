@@ -2,6 +2,7 @@
 /* Spatial input prototype */
 /* Colour areas appear in random positions */
 /* Each area has a random note */
+/* Overlapping colours play animal sounds */
 /* X position changes play order */
 /////
 
@@ -14,6 +15,7 @@ const animals = document.querySelectorAll(".animal");
 
 const playButton = document.getElementById("playButton");
 const redoButton = document.getElementById("redoButton");
+const refreshButton = document.getElementById("refreshButton");
 
 let currentAnimal = null;
 
@@ -84,11 +86,12 @@ function createSoundZones() {
                 )
                 ];
 
+
         // Save note
         zone.dataset.pitch = randomNote;
 
 
-        // Add area to music space
+        // Add area
         xyPad.appendChild(zone);
     });
 }
@@ -189,7 +192,7 @@ function stopDragging() {
     }
 
 
-    // Find centre of animal
+    // Find animal centre
     const animalRect =
         currentAnimal.getBoundingClientRect();
 
@@ -202,16 +205,14 @@ function stopDragging() {
         animalRect.height / 2;
 
 
-    // Find all sound areas
+    // Find colour areas
     const zones =
         document.querySelectorAll(".sound-zone");
 
-
-    // Clear old note
-    delete currentAnimal.dataset.pitch;
+    let foundZones = [];
 
 
-    // Check which area the animal is in
+    // Check which areas animal is inside
     zones.forEach((zone) => {
 
         const zoneRect =
@@ -225,14 +226,44 @@ function stopDragging() {
             animalY <= zoneRect.bottom
         ) {
 
-            // Give animal the area's note
-            currentAnimal.dataset.pitch =
-                zone.dataset.pitch;
+            foundZones.push(zone);
         }
     });
 
 
+    // Overlapping colours
+    if (foundZones.length >= 2) {
+
+        currentAnimal.dataset.useAnimalSound =
+            "true";
+
+        delete currentAnimal.dataset.pitch;
+    }
+
+
+    // One colour
+    else if (foundZones.length === 1) {
+
+        currentAnimal.dataset.pitch =
+            foundZones[0].dataset.pitch;
+
+        currentAnimal.dataset.useAnimalSound =
+            "false";
+    }
+
+
+    // Outside colour areas
+    else {
+
+        delete currentAnimal.dataset.pitch;
+
+        currentAnimal.dataset.useAnimalSound =
+            "false";
+    }
+
+
     currentAnimal = null;
+
 
     window.removeEventListener(
         "mousemove",
@@ -252,13 +283,14 @@ playButton.addEventListener("click", async () => {
     await Tone.start();
 
 
-    // Get animals with notes
+    // Get animals with sounds
     const placedAnimals =
         Array.from(
             xyPad.querySelectorAll(".animal.placed")
         ).filter((animal) => {
 
-            return animal.dataset.pitch;
+            return animal.dataset.pitch ||
+                animal.dataset.useAnimalSound === "true";
         });
 
 
@@ -278,20 +310,32 @@ playButton.addEventListener("click", async () => {
     // Play each animal
     placedAnimals.forEach((animal, index) => {
 
-        let pitch =
-            animal.dataset.pitch;
-
         let delay =
             index * 500;
 
 
         setTimeout(() => {
 
-            // Play note
-            synth.triggerAttackRelease(
-                pitch,
-                "8n"
-            );
+            // Play animal sound
+            if (
+                animal.dataset.useAnimalSound === "true"
+            ) {
+
+                const animalSound =
+                    new Audio(animal.dataset.sound);
+
+                animalSound.play();
+            }
+
+
+            // Play normal note
+            else {
+
+                synth.triggerAttackRelease(
+                    animal.dataset.pitch,
+                    "8n"
+                );
+            }
 
 
             // Make animal bigger
@@ -308,6 +352,24 @@ playButton.addEventListener("click", async () => {
             }, 300);
 
         }, delay);
+    });
+});
+
+
+// Refresh sound areas
+refreshButton.addEventListener("click", () => {
+
+    // Create new random areas
+    createSoundZones();
+
+
+    // Clear old sounds
+    animals.forEach((animal) => {
+
+        delete animal.dataset.pitch;
+
+        animal.dataset.useAnimalSound =
+            "false";
     });
 });
 
@@ -329,13 +391,12 @@ redoButton.addEventListener("click", () => {
         animal.style.transform = "";
 
 
-        // Clear note
+        // Clear sounds
         delete animal.dataset.pitch;
+
+        animal.dataset.useAnimalSound =
+            "false";
     });
-
-
-    // Create new random areas
-    createSoundZones();
 });
 
 
