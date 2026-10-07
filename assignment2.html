@@ -24,24 +24,27 @@
 </head>
 <body>
 <section>
+    <section id="spatialPrototype">
+    <h5>Spatial Input Demos</h5>
 
-    <h2>Spatial Input Demos</h2>
+        <!-- Animals start here -->
+        <div id="animalArea">
+            <div class="animal" id="cat" data-sound="audio/cat.mp3">🐱</div>
+            <div class="animal" id="frog" data-sound="audio/frog.mp3">🐸</div>
+            <div class="animal" id="chick" data-sound="audio/chick.mp3">🐥</div>
+            <div class="animal" id="dog" data-sound="audio/dog.mp3">🐶</div>
+            <div class="animal" id="cow" data-sound="audio/cow.mp3">🐮</div>
+        </div>
 
-    <div id="xyPad">
+        <!-- Music area -->
+        <div id="xyPad"></div>
 
-        <div class="music-line"></div>
-        <div class="music-line"></div>
-        <div class="music-line"></div>
-        <div class="music-line"></div>
-        <div class="music-line"></div>
-
-        <div id="xyPosMarker">🐱</div>
-
-    </div>
-
-    <p>X: <span id="xPosOutput">0</span></p>
-    <p>Y: <span id="yPosOutput">0</span></p>
-
-</section>
+        <!-- Controls -->
+        <div id="controls">
+            <button id="playButton">Play</button>
+            <button id="redoButton">Redo</button>
+            <button id="refreshButton">Refresh</button>
+        </div>
+    </section>
 </body>
 </html>
