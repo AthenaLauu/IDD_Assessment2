@@ -5,107 +5,334 @@
 /* also important is that we've set the marker to pointer-events: none in the CSS so that we can listen for events on the pad*/
 /////
 const synth = new Tone.PolySynth().toDestination();
-let currentPitch = "C4";
 
-// find svg elements
-const svgElm = document.getElementById("SVGParent");
 const xyPad = document.getElementById("xyPad");
-const marker = document.getElementById("xyPosMarker");
-// find text feedback elements
-const xOutputText = document.getElementById("xPosOutput");
-const yOutputText = document.getElementById("yPosOutput");
-// find dimensions of pad : this code doesn't handle screen or element resize currently
-let xyPadWidth = xyPad.getBoundingClientRect().width;
-let xyPadHeight = xyPad.getBoundingClientRect().height;
+const animalArea = document.getElementById("animalArea");
 
-function updateXYPos(e){
-    // find amount of pixels from lefthand side of element
-    let xPos = e.layerX;
-    // work out this as a percentage by dividing by width then mult by 100
-    let xPercent = (xPos / xyPadWidth) * 100;
-    // same as above but for y and height
-    let yPos = e.layerY;
-    let yPercent = (yPos / xyPadHeight) * 100;
-    // then print these to our feedback elements : using template literals
-    xOutputText.textContent = `${xPos} (${parseInt(xPercent)}%)`;
-    yOutputText.textContent = `${yPos} (${parseInt(yPercent)}%)`;
-    // finally update our marker
-    marker.style.left = `${xPercent}%`;
-    marker.style.top = `${yPercent}%`;
+const animals = document.querySelectorAll(".animal");
 
-    // Change pitch depending on Y position
-    if (yPercent < 20) {
-        currentPitch = "C5";
-    }
-    else if (yPercent < 40) {
-        currentPitch = "A4";
-    }
-    else if (yPercent < 60) {
-        currentPitch = "G4";
-    }
-    else if (yPercent < 80) {
-        currentPitch = "E4";
-    }
-    else {
-        currentPitch = "C4";
-    }
+const playButton = document.getElementById("playButton");
+const redoButton = document.getElementById("redoButton");
 
+let currentAnimal = null;
+
+
+// Notes for random areas
+const notes = [
+    "C4",
+    "D4",
+    "E4",
+    "F4",
+    "G4",
+    "A4",
+    "B4",
+    "C5",
+    "D5",
+    "E5"
+];
+
+
+// Colours for sound areas
+const colours = [
+    "#ffb3b3",
+    "#fff0a6",
+    "#b8e6b8",
+    "#b8d8f5",
+    "#d8b8e8"
+];
+
+
+// Create random sound areas
+function createSoundZones() {
+
+    // Remove old areas
+    const oldZones =
+        xyPad.querySelectorAll(".sound-zone");
+
+    oldZones.forEach((zone) => {
+        zone.remove();
+    });
+
+
+    // Create new areas
+    colours.forEach((colour) => {
+
+        const zone =
+            document.createElement("div");
+
+        zone.classList.add("sound-zone");
+
+
+        // Random position
+        let x = Math.random() * 75;
+        let y = Math.random() * 70;
+
+        zone.style.left = `${x}%`;
+        zone.style.top = `${y}%`;
+
+
+        // Add colour
+        zone.style.backgroundColor = colour;
+
+
+        // Choose random note
+        let randomNote =
+            notes[
+                Math.floor(
+                    Math.random() * notes.length
+                )
+                ];
+
+        // Save note
+        zone.dataset.pitch = randomNote;
+
+
+        // Add area to music space
+        xyPad.appendChild(zone);
+    });
 }
 
-// so the above function updates our text and marker - the trick to making this work is to be a bit
-// tricky with our event listener : we want to also be able to hold our mouse and drag the marker around
-// and we need to handle the edge case of dragging going outside of the xyPad : we can do all this with
-// some thought into assigning and removing eventlisteners
-xyPad.addEventListener("mousedown", async (e) => {
 
-    // Start Tone.js audio
-    await Tone.start();
+// Create areas when page starts
+createSoundZones();
 
-    // Update animal position
-    updateXYPos(e);
 
-    // Move animal while mouse is held down
-    xyPad.addEventListener("mousemove", updateXYPos);
+// Start dragging animal
+animals.forEach((animal) => {
 
-    window.addEventListener("mouseup", function mouseUpRemove() {
+    animal.addEventListener("mousedown", async (e) => {
 
-        // Stop moving animal
-        xyPad.removeEventListener("mousemove", updateXYPos);
+        await Tone.start();
 
-        // Play the pitch based on the animal's position
-        synth.triggerAttackRelease(currentPitch, "8n");
+        currentAnimal = animal;
 
-        // Remove mouseup listener
-        window.removeEventListener("mouseup", mouseUpRemove);
+
+        // Move animal into music area
+        if (!animal.classList.contains("placed")) {
+
+            xyPad.appendChild(animal);
+
+            animal.classList.add("placed");
+        }
+
+
+        moveAnimal(e);
+
+        window.addEventListener(
+            "mousemove",
+            moveAnimal
+        );
+
+        window.addEventListener(
+            "mouseup",
+            stopDragging
+        );
     });
 });
 
-/////
-// This is a basic scroll event listener
-/////
 
-    // find our document (the web page) information as the listener runs on it instead an element : see below
-    //const page = document.documentElement;
-    //const body = document.body;
-    //const scrollPercentSpan = document.getElementById("scrollPercentSpan");
+// Move animal
+function moveAnimal(e) {
 
-    // the event listener is added to the document itself, rather than an element, so I can get the page scroll position. it
-    // can also be applied to a single element, if that element also has a scroll bar based on overflow
-    // because its a scroll event we need to set it to passive - see here for more detail :
-    // https://stackoverflow.com/questions/37721782/what-are-passive-event-listeners
-    //document.addEventListener('scroll', handleScroll, { passive: true });
-
-    //function handleScroll(){
-        //scrollPercentSpan.textContent = getScrollPercent();
-    //}
-
-    //function getScrollPercent() {
-        // we want to find the percentage of the page scrolled
-        // scrollTop is how far it is scrolled, scrollHeight is total height : dividing one by the other gives us our percent
-        // we also have to minus the height of the window (clientHeight) to account for the end of the page
-        // in practice this leads to the bottom being slightly over 1.0 but it's good enough for this
-        //const scrollPercent = page.scrollTop / (page.scrollHeight - page.clientHeight);
-        // finally we want to return this as a percentage number, so we mult by 100 then round it to whole numbers
-        //return parseInt(scrollPercent * 100); }
+    if (!currentAnimal) {
+        return;
+    }
 
 
+    const rect =
+        xyPad.getBoundingClientRect();
+
+
+    let xPos =
+        e.clientX - rect.left;
+
+    let yPos =
+        e.clientY - rect.top;
+
+
+    let xPercent =
+        (xPos / rect.width) * 100;
+
+    let yPercent =
+        (yPos / rect.height) * 100;
+
+
+    // Keep animal inside music area
+    xPercent =
+        Math.max(
+            0,
+            Math.min(100, xPercent)
+        );
+
+    yPercent =
+        Math.max(
+            0,
+            Math.min(100, yPercent)
+        );
+
+
+    // Move animal
+    currentAnimal.style.left =
+        `${xPercent}%`;
+
+    currentAnimal.style.top =
+        `${yPercent}%`;
+}
+
+
+// Stop dragging
+function stopDragging() {
+
+    if (!currentAnimal) {
+        return;
+    }
+
+
+    // Find centre of animal
+    const animalRect =
+        currentAnimal.getBoundingClientRect();
+
+    const animalX =
+        animalRect.left +
+        animalRect.width / 2;
+
+    const animalY =
+        animalRect.top +
+        animalRect.height / 2;
+
+
+    // Find all sound areas
+    const zones =
+        document.querySelectorAll(".sound-zone");
+
+
+    // Clear old note
+    delete currentAnimal.dataset.pitch;
+
+
+    // Check which area the animal is in
+    zones.forEach((zone) => {
+
+        const zoneRect =
+            zone.getBoundingClientRect();
+
+
+        if (
+            animalX >= zoneRect.left &&
+            animalX <= zoneRect.right &&
+            animalY >= zoneRect.top &&
+            animalY <= zoneRect.bottom
+        ) {
+
+            // Give animal the area's note
+            currentAnimal.dataset.pitch =
+                zone.dataset.pitch;
+        }
+    });
+
+
+    currentAnimal = null;
+
+    window.removeEventListener(
+        "mousemove",
+        moveAnimal
+    );
+
+    window.removeEventListener(
+        "mouseup",
+        stopDragging
+    );
+}
+
+
+// Play animals from left to right
+playButton.addEventListener("click", async () => {
+
+    await Tone.start();
+
+
+    // Get animals with notes
+    const placedAnimals =
+        Array.from(
+            xyPad.querySelectorAll(".animal.placed")
+        ).filter((animal) => {
+
+            return animal.dataset.pitch;
+        });
+
+
+    // Sort animals left to right
+    placedAnimals.sort((a, b) => {
+
+        let aPosition =
+            parseFloat(a.style.left);
+
+        let bPosition =
+            parseFloat(b.style.left);
+
+        return aPosition - bPosition;
+    });
+
+
+    // Play each animal
+    placedAnimals.forEach((animal, index) => {
+
+        let pitch =
+            animal.dataset.pitch;
+
+        let delay =
+            index * 500;
+
+
+        setTimeout(() => {
+
+            // Play note
+            synth.triggerAttackRelease(
+                pitch,
+                "8n"
+            );
+
+
+            // Make animal bigger
+            animal.style.transform =
+                "translate(-50%, -50%) scale(1.8)";
+
+
+            // Return to normal size
+            setTimeout(() => {
+
+                animal.style.transform =
+                    "translate(-50%, -50%) scale(1)";
+
+            }, 300);
+
+        }, delay);
+    });
+});
+
+
+// Redo the music
+redoButton.addEventListener("click", () => {
+
+    animals.forEach((animal) => {
+
+        // Move animal back outside
+        animalArea.appendChild(animal);
+
+        animal.classList.remove("placed");
+
+
+        // Clear position
+        animal.style.left = "";
+        animal.style.top = "";
+        animal.style.transform = "";
+
+
+        // Clear note
+        delete animal.dataset.pitch;
+    });
+
+
+    // Create new random areas
+    createSoundZones();
+});
