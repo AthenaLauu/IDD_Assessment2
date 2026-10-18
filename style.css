@@ -482,37 +482,37 @@ footer {
     transform: translate(-50%, -50%) scale(1.4);
 }
 
-
-/* Buttons */
 #controls {
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 20px;
     margin-top: 20px;
     margin-bottom: 30px;
 }
 
-
+/* All control buttons */
 #controls button {
-    padding: 10px 25px;
-    font-size: 18px;
+    width: 65px;
+    height: 65px;
+    padding: 8px;
+    border: none;
+    background: transparent;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
-
-/* Buttons */
-#controls {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-    margin-bottom: 30px;
+/* Button images */
+#controls button img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
-
-#controls button {
-    padding: 10px 25px;
-    font-size: 18px;
-    cursor: pointer;
+/* Hover feedback */
+#controls button:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
 }

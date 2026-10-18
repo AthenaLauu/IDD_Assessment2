@@ -1,3 +1,4 @@
+
 /////
 /* Spatial input prototype */
 /* Colour areas appear in random positions */
@@ -14,10 +15,28 @@ const animalArea = document.getElementById("animalArea");
 const animals = document.querySelectorAll(".animal");
 
 const playButton = document.getElementById("playButton");
+const playIcon = document.getElementById("playIcon");
+
 const redoButton = document.getElementById("redoButton");
 const refreshButton = document.getElementById("refreshButton");
 
 let currentAnimal = null;
+
+
+// Playback variables
+let isPlaying = false;
+let isPaused = false;
+
+let playbackAnimals = [];
+let playbackIndex = 0;
+let playbackTimer = null;
+
+let remainingDelay = 500;
+let nextPlayTime = 0;
+
+let currentAudio = null;
+let animationTimer = null;
+let activeAnimal = null;
 
 
 // Notes for random areas
@@ -107,6 +126,11 @@ animals.forEach((animal) => {
     animal.addEventListener("mousedown", async (e) => {
 
         await Tone.start();
+
+        // Stop playback when moving an animal
+        if (isPlaying || isPaused) {
+            stopPlayback();
+        }
 
         currentAnimal = animal;
 
@@ -283,8 +307,75 @@ playButton.addEventListener("click", async () => {
     await Tone.start();
 
 
+    // Pause playback
+    if (isPlaying) {
+
+        isPlaying = false;
+        isPaused = true;
+
+        // Save remaining time before next animal
+        remainingDelay = Math.max(
+            0,
+            nextPlayTime - performance.now()
+        );
+
+        clearTimeout(playbackTimer);
+        playbackTimer = null;
+
+        // Stop normal notes
+        synth.releaseAll();
+
+        // Pause animal sound
+        if (currentAudio) {
+            currentAudio.pause();
+        }
+
+        // Stop scale-up animation
+        clearTimeout(animationTimer);
+
+        if (activeAnimal) {
+            activeAnimal.style.transform =
+                "translate(-50%, -50%) scale(1)";
+
+            activeAnimal = null;
+        }
+
+        playIcon.src = "image/play-button.png";
+        playButton.setAttribute("aria-label", "Play");
+
+        return;
+    }
+
+
+    // Resume playback
+    if (isPaused) {
+
+        isPlaying = true;
+        isPaused = false;
+
+        // Resume animal sound
+        if (currentAudio && currentAudio.paused) {
+
+            currentAudio.play().catch((error) => {
+                console.error(
+                    "Animal sound could not resume:",
+                    error
+                );
+            });
+        }
+
+        playIcon.src = "image/pause-button.png";
+        playButton.setAttribute("aria-label", "Pause");
+
+        // Continue after remaining delay
+        scheduleNextAnimal(remainingDelay);
+
+        return;
+    }
+
+
     // Get animals with sounds
-    const placedAnimals =
+    playbackAnimals =
         Array.from(
             xyPad.querySelectorAll(".animal.placed")
         ).filter((animal) => {
@@ -295,7 +386,7 @@ playButton.addEventListener("click", async () => {
 
 
     // Sort animals left to right
-    placedAnimals.sort((a, b) => {
+    playbackAnimals.sort((a, b) => {
 
         let aPosition =
             parseFloat(a.style.left);
@@ -307,57 +398,184 @@ playButton.addEventListener("click", async () => {
     });
 
 
-    // Play each animal
-    placedAnimals.forEach((animal, index) => {
-
-        let delay =
-            index * 500;
-
-
-        setTimeout(() => {
-
-            // Play animal sound
-            if (
-                animal.dataset.useAnimalSound === "true"
-            ) {
-
-                const animalSound =
-                    new Audio(animal.dataset.sound);
-
-                animalSound.play();
-            }
+    // Do not play if no animals have sounds
+    if (playbackAnimals.length === 0) {
+        return;
+    }
 
 
-            // Play normal note
-            else {
+    playbackIndex = 0;
 
-                synth.triggerAttackRelease(
-                    animal.dataset.pitch,
-                    "8n"
-                );
-            }
+    isPlaying = true;
+    isPaused = false;
 
+    playIcon.src = "image/pause-button.png";
+    playButton.setAttribute("aria-label", "Pause");
 
-            // Make animal bigger
-            animal.style.transform =
-                "translate(-50%, -50%) scale(1.8)";
-
-
-            // Return to normal size
-            setTimeout(() => {
-
-                animal.style.transform =
-                    "translate(-50%, -50%) scale(1)";
-
-            }, 300);
-
-        }, delay);
-    });
+    // Play first animal
+    playNextAnimal();
 });
+
+
+// Play each animal
+function playNextAnimal() {
+
+    if (!isPlaying) {
+        return;
+    }
+
+
+    // Finish playback
+    if (playbackIndex >= playbackAnimals.length) {
+
+        stopPlayback();
+        return;
+    }
+
+
+    const animal =
+        playbackAnimals[playbackIndex];
+
+
+    // Stop previous animal sound
+    if (currentAudio) {
+
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+
+
+    // Play animal sound
+    if (
+        animal.dataset.useAnimalSound === "true"
+    ) {
+
+        currentAudio =
+            new Audio(animal.dataset.sound);
+
+        currentAudio.play().catch((error) => {
+            console.error(
+                "Animal sound could not play:",
+                error
+            );
+        });
+    }
+
+
+    // Play normal note
+    else {
+
+        synth.triggerAttackRelease(
+            animal.dataset.pitch,
+            "8n"
+        );
+    }
+
+
+    // Stop previous animation
+    clearTimeout(animationTimer);
+
+    if (activeAnimal) {
+        activeAnimal.style.transform =
+            "translate(-50%, -50%) scale(1)";
+    }
+
+
+    // Make animal bigger
+    activeAnimal = animal;
+
+    animal.style.transform =
+        "translate(-50%, -50%) scale(1.8)";
+
+
+    // Return to normal size
+    animationTimer = setTimeout(() => {
+
+        animal.style.transform =
+            "translate(-50%, -50%) scale(1)";
+
+        activeAnimal = null;
+
+    }, 300);
+
+
+    // Move to next animal
+    playbackIndex++;
+
+    scheduleNextAnimal(500);
+}
+
+
+// Schedule next animal
+function scheduleNextAnimal(delay) {
+
+    clearTimeout(playbackTimer);
+
+    nextPlayTime =
+        performance.now() + delay;
+
+    playbackTimer = setTimeout(() => {
+
+        playbackTimer = null;
+
+        playNextAnimal();
+
+    }, delay);
+}
+
+
+// Stop playback
+function stopPlayback() {
+
+    isPlaying = false;
+    isPaused = false;
+
+    clearTimeout(playbackTimer);
+    playbackTimer = null;
+
+    // Stop normal notes
+    synth.releaseAll();
+
+    // Stop animal sound
+    if (currentAudio) {
+
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+
+        currentAudio = null;
+    }
+
+    // Stop scale-up animation
+    clearTimeout(animationTimer);
+
+    if (activeAnimal) {
+
+        activeAnimal.style.transform =
+            "translate(-50%, -50%) scale(1)";
+
+        activeAnimal = null;
+    }
+
+    // Reset playback
+    playbackAnimals = [];
+    playbackIndex = 0;
+
+    remainingDelay = 500;
+    nextPlayTime = 0;
+
+    // Change button back to Play
+    playIcon.src = "image/play-button.png";
+    playButton.setAttribute("aria-label", "Play");
+}
 
 
 // Refresh sound areas
 refreshButton.addEventListener("click", () => {
+
+    // Stop playback
+    stopPlayback();
+
 
     // Create new random areas
     createSoundZones();
@@ -376,6 +594,10 @@ refreshButton.addEventListener("click", () => {
 
 // Redo the music
 redoButton.addEventListener("click", () => {
+
+    // Stop playback
+    stopPlayback();
+
 
     animals.forEach((animal) => {
 
@@ -398,30 +620,3 @@ redoButton.addEventListener("click", () => {
             "false";
     });
 });
-
-
-/////
-// This is a basic scroll event listener
-/////
-
-// find our document (the web page) information as the listener runs on it instead an element : see below
-//const page = document.documentElement;
-//const body = document.body;
-//const scrollPercentSpan = document.getElementById("scrollPercentSpan");
-
-// the event listener is added to the document itself, rather than an element, so I can get the page scroll position.
-// because its a scroll event we need to set it to passive
-//document.addEventListener('scroll', handleScroll, { passive: true });
-
-//function handleScroll(){
-//    scrollPercentSpan.textContent = getScrollPercent();
-//}
-
-//function getScrollPercent() {
-
-//const scrollPercent =
-//    page.scrollTop /
-//    (page.scrollHeight - page.clientHeight);
-
-//return parseInt(scrollPercent * 100);
-//}
