@@ -255,24 +255,80 @@ footer {
 /* Heading */
 #spatialPrototype h5 {
     text-align: center;
+    font-size: 22px;
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     flex-shrink: 0;
 }
 
 
-/* Animals */
+
+/* Animal house */
 #animalArea {
-    width: 100%;
+    position: relative;
+    z-index: 5;
+
+    width: 350px;
+    max-width: 90%;
+
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: 30px;
-    margin-bottom: 20px;
+
+    gap: 12px;
+
+    padding: 15px 15px 12px;
+    margin-top: 40px;
+    margin-bottom: 10px;
+
+    background: #fff2d5;
+    border: 4px solid #d8a46d;
+    border-radius: 10px;
+
     user-select: none;
     flex-shrink: 0;
 }
+
+/* Smaller roof */
+#animalArea::before {
+    content: "";
+
+    position: absolute;
+    width: calc(100% + 20px);
+    height: 50px;
+
+    left: -10px;
+    top: -45px;
+
+    background: #ef8c7b;
+
+    clip-path: polygon(
+            50% 0%,
+            100% 100%,
+            0% 100%
+    );
+
+    pointer-events: none;
+}
+
+/* Bottom decoration */
+#animalArea::after {
+    content: "";
+
+    position: absolute;
+    width: 100%;
+    height: 8px;
+
+    left: 0;
+    bottom: 0;
+
+    background: #e8c395;
+    border-radius: 0 0 6px 6px;
+
+    pointer-events: none;
+}
+
 
 
 /* Animal */
@@ -396,9 +452,9 @@ footer {
 /* Colour areas */
 .sound-zone {
     position: absolute;
-    width: 180px;
-    height: 120px;
-    border-radius: 20px;
+    width: 260px;
+    height: 170px;
+    border-radius: 25px;
     opacity: 0.7;
     pointer-events: none;
     z-index: 1;
