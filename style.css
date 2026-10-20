@@ -23,7 +23,7 @@
 
 
 body {
-    background: #469548;
+    background: #4ba64b;
     font-family: 'Work Sans', sans-serif;
     line-height: 1.5;
     margin: 0;
@@ -270,6 +270,7 @@ footer {
 
     width: 350px;
     max-width: 90%;
+    height: 150px;
 
     display: flex;
     flex-direction: row;
@@ -278,57 +279,29 @@ footer {
 
     gap: 12px;
 
-    padding: 15px 15px 12px;
-    margin-top: 40px;
+    padding: 35px 15px 10px;
+    margin-top: 0;
     margin-bottom: 10px;
 
-    background: #fff2d5;
-    border: 4px solid #d8a46d;
-    border-radius: 10px;
+    background-image: url("image/house.png");
+    background-size: 100% 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    border: none;
+    border-radius: 0;
 
     user-select: none;
     flex-shrink: 0;
 }
 
-/* Smaller roof */
 #animalArea::before {
-    content: "";
-
-    position: absolute;
-    width: calc(100% + 20px);
-    height: 50px;
-
-    left: -10px;
-    top: -45px;
-
-    background: #ef8c7b;
-
-    clip-path: polygon(
-            50% 0%,
-            100% 100%,
-            0% 100%
-    );
-
-    pointer-events: none;
+    content: none;
 }
 
-/* Bottom decoration */
 #animalArea::after {
-    content: "";
-
-    position: absolute;
-    width: 100%;
-    height: 8px;
-
-    left: 0;
-    bottom: 0;
-
-    background: #e8c395;
-    border-radius: 0 0 6px 6px;
-
-    pointer-events: none;
+    content: none;
 }
-
 
 
 /* Animal */
@@ -360,7 +333,7 @@ footer {
         background: #5ebc60;
         border-radius: 50%;
         pointer-events: none;
-        z-index: 2;
+        z-index: 0;
     }
 
     /* Left blade */
@@ -435,7 +408,7 @@ footer {
             -13px 0 0 3px #fffdf1;
 
     pointer-events: none;
-    z-index: 2;
+    z-index: 0;
 }
 
 /* Flower positions */
@@ -624,5 +597,79 @@ footer {
     #controls #playButton {
         width: 75px;
         height: 75px;
+    }
+}
+/* Tablet */
+@media (max-width: 840px) {
+    #animalArea {
+        width: 320px;
+        height: 140px;
+        gap: 10px;
+        padding: 30px 12px 10px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    #animalArea {
+        width: 280px;
+        height: 120px;
+        gap: 6px;
+        padding: 25px 10px 8px;
+    }
+}
+
+/* VISUAL FEEDBACK */
+
+/* Normal sound zone feedback */
+.sound-zone.zone-active {
+    animation: zonePulse 0.4s ease;
+}
+
+@keyframes zonePulse {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    50% {
+        transform: scale(1.06);
+        filter: brightness(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+}
+
+/* Overlapping sound zone feedback */
+.sound-zone.zone-overlap {
+    animation: overlapPulse 0.6s ease;
+}
+
+@keyframes overlapPulse {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+        box-shadow: 0 0 0 transparent;
+    }
+
+    30% {
+        transform: scale(1.03);
+        filter: brightness(1.5);
+        box-shadow: 0 0 20px 8px rgba(255, 255, 255, 0.8);
+    }
+
+    60% {
+        transform: scale(1);
+        filter: brightness(1.2);
+        box-shadow: 0 0 10px 4px rgba(255, 255, 255, 0.5);
+    }
+
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+        box-shadow: 0 0 0 transparent;
     }
 }

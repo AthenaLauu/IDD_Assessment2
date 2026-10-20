@@ -1,4 +1,3 @@
-
 /////
 /* Spatial input prototype */
 /* Colour areas appear in random positions */
@@ -6,6 +5,7 @@
 /* Overlapping colours play animal sounds */
 /* X position changes play order */
 /////
+
 
 const synth = new Tone.PolySynth().toDestination();
 
@@ -112,6 +112,32 @@ function createSoundZones() {
 
         // Add area
         xyPad.appendChild(zone);
+    });
+}
+
+
+// VISUAL FEEDBACK
+// Highlight sound zones when animals enter them.
+
+function showZoneFeedback(activeZones) {
+
+    if (activeZones.length === 0) return;
+
+    const feedbackClass =
+        activeZones.length > 1
+            ? "zone-overlap"
+            : "zone-active";
+
+    activeZones.forEach((zone) => {
+
+        zone.classList.remove(
+            "zone-active",
+            "zone-overlap"
+        );
+
+        void zone.offsetWidth;
+
+        zone.classList.add(feedbackClass);
     });
 }
 
@@ -284,6 +310,10 @@ function stopDragging() {
         currentAnimal.dataset.useAnimalSound =
             "false";
     }
+
+
+    // Show visual feedback for the selected sound zones
+    showZoneFeedback(foundZones);
 
 
     currentAnimal = null;
