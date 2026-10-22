@@ -86,12 +86,17 @@ function createSoundZones() {
 
 
         // Random position
-        let x = Math.random() * 75;
-        let y = Math.random() * 70;
+        const zoneWidth = 260;
+        const zoneHeight = 170;
 
-        zone.style.left = `${x}%`;
-        zone.style.top = `${y}%`;
+        const maxX = Math.max(0, xyPad.clientWidth - zoneWidth);
+        const maxY = Math.max(0, xyPad.clientHeight - zoneHeight);
 
+        let x = Math.random() * maxX;
+        let y = Math.random() * maxY;
+
+        zone.style.left = `${x}px`;
+        zone.style.top = `${y}px`;
 
         // Add colour
         zone.style.backgroundColor = colour;
@@ -649,4 +654,19 @@ redoButton.addEventListener("click", () => {
         animal.dataset.useAnimalSound =
             "false";
     });
+});
+
+// TUTORIAL GUIDE
+// Hide the tutorial when the Start button is clicked.
+
+const tutorialOverlay =
+    document.getElementById("tutorialOverlay");
+
+const startButton =
+    document.getElementById("startButton");
+
+startButton.addEventListener("click", () => {
+
+    tutorialOverlay.style.display = "none";
+
 });
