@@ -83,11 +83,12 @@ function createSoundZones() {
             document.createElement("div");
 
         zone.classList.add("sound-zone");
-
+        xyPad.appendChild(zone);
 
         // Random position
-        const zoneWidth = 260;
-        const zoneHeight = 170;
+        const zoneStyle = getComputedStyle(zone);
+        const zoneWidth = parseFloat(zoneStyle.width);
+        const zoneHeight = parseFloat(zoneStyle.height);
 
         const maxX = Math.max(0, xyPad.clientWidth - zoneWidth);
         const maxY = Math.max(0, xyPad.clientHeight - zoneHeight);
@@ -100,7 +101,8 @@ function createSoundZones() {
 
         // Add colour
         zone.style.backgroundColor = colour;
-
+        zone.style.border = `3px solid color-mix(in srgb, ${colour} 70%, black)`;
+        zone.style.boxSizing = "border-box";
 
         // Choose random note
         let randomNote =
