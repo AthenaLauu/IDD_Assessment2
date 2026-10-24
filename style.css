@@ -24,6 +24,10 @@
 
 body {
     background: #97C566;
+    background: repeating-linear-gradient(
+            90deg,#A3C672 0px,#A3C672 120px,
+            #9ABD69 120px,#9ABD69 240px
+    );
     font-family: 'Work Sans', sans-serif;
     line-height: 1.5;
     margin: 0;
@@ -421,6 +425,7 @@ footer {
     bottom: 20%;
     right: 12%;
 }
+
 
 /* Colour areas */
 .sound-zone {
